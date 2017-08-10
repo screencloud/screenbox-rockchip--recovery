@@ -1,0 +1,198 @@
+<application>
+	<ui resType="1" resX="1024" resY="600">
+	    <configure>
+			<qrcPath>:/registerResource1/resource1/</qrcPath>
+			<absolutePath>Resource/</absolutePath>
+		</configure>
+		<widgets>
+			<widget name="topWidget">
+				<x>0</x>
+				<y>0</y>
+				<width>1024</width>
+				<height>70</height>
+			</widget>
+			<widget name="titleLogoLabel">
+				<x>20</x>
+				<y>6</y>
+				<width>48</width>
+				<height>48</height>
+			</widget>
+			<widget name="topBackBtn">
+				<x>954</x>
+				<y>0</y>
+				<width>60</width>
+				<height>60</height>
+			</widget>
+			<widget name="homeWidgetTitleLabel">
+				<x>0</x>
+				<y>0</y>
+				<width>560</width>
+				<height>100</height>
+			</widget>
+			<widget name="widgetTitleLabel">
+				<x>420</x>
+				<y>32</y>
+				<width>360</width>
+				<height>70</height>
+			</widget>
+			<widget name="widgetMainTextBG">
+				<x>390</x>
+				<y>132</y>
+				<width>604</width>
+				<height>338</height>
+			</widget>
+			<widget name="RetryPushBtn">
+				<x>405</x>
+				<y>502</y>
+				<width>212</width>
+				<height>74</height>
+			</widget>
+			<widget name="BackPushBtn">
+				<x>765</x>
+				<y>502</y>
+				<width>212</width>
+				<height>74</height>
+			</widget>
+		   <widget name="widgetRightWidget">
+				<x>10</x>
+				<y>0</y>
+				<width>380</width>
+				<height>600</height>
+			</widget>
+			<widget name="registerSubWidget">
+				<x>0</x>
+				<y>0</y>
+				<width>630</width>
+				<height>390</height>
+			</widget>
+			<widget name="blackgroundWidget">
+				<x>0</x>
+				<y>0</y>
+				<width>1024</width>
+				<height>600</height>
+			</widget>
+			<widget name="ctrlBarBtn">
+				<x>0</x>
+				<y>240</y>
+				<width>110</width>
+				<height>110</height>
+			</widget>
+			<widget name="menuWidget">
+				<x>116</x>
+				<y>448</y>
+				<width>795</width>
+				<height>120</height>
+			</widget>
+			<widget name="iosMenuWidget">
+				<x>312</x>
+				<y>448</y>
+				<width>400</width>
+				<height>120</height>
+			</widget>
+			<widget name="settingTopBackBtn">
+				<x>939</x>
+				<y>0</y>
+				<width>60</width>
+				<height>60</height>
+		  </widget>
+		</widgets>
+	</ui>
+	<ui resType="2" resX="800" resY="480">
+	    <configure>
+			<qrcPath>:/registerResource2/resource2/</qrcPath>
+			<absolutePath>Resource/</absolutePath>
+		</configure>
+		<widgets>
+			<widget name="topWidget">
+				<x>0</x>
+				<y>0</y>
+				<width>800</width>
+				<height>57</height>
+			</widget>
+			<widget name="titleLogoLabel">
+				<x>16</x>
+				<y>4</y>
+				<width>38</width>
+				<height>38</height>
+			</widget>
+			<widget name="topBackBtn">
+				<x>732</x>
+				<y>0</y>
+				<width>48</width>
+				<height>48</height>
+			</widget>
+			<widget name="homeWidgetTitleLabel">
+				<x>0</x>
+				<y>0</y>
+				<width>517</width>
+				<height>96</height>
+			</widget>
+			<widget name="widgetTitleLabel">
+				<x>318</x>
+				<y>18</y>
+				<width>300</width>
+				<height>70</height>
+			</widget>
+			<widget name="widgetMainTextBG">
+				<x>304</x>
+				<y>105</y>
+				<width>482</width>
+				<height>270</height>
+			</widget>
+			<widget name="RetryPushBtn">
+				<x>318</x>
+				<y>400</y>
+				<width>172</width>
+				<height>60</height>
+			</widget>
+			<widget name="BackPushBtn">
+				<x>600</x>
+				<y>400</y>
+				<width>172</width>
+				<height>60</height>
+			</widget>
+			<widget name="widgetRightWidget">
+				<x>8</x>
+				<y>0</y>
+				<width>296</width>
+				<height>480</height>
+			</widget>
+			<widget name="registerSubWidget">
+				<x>0</x>
+				<y>0</y>
+				<width>490</width>
+				<height>300</height>
+			</widget>
+			<widget name="blackgroundWidget">
+				<x>0</x>
+				<y>0</y>
+				<width>800</width>
+				<height>480</height>
+			</widget>
+			<widget name="ctrlBarBtn">
+				<x>0</x>
+				<y>200</y>
+				<width>88</width>
+				<height>88</height>
+			</widget>
+			<widget name="menuWidget">
+				<x>77</x>
+				<y>358</y>
+				<width>638</width>
+				<height>128</height>
+			</widget>
+			<widget name="iosMenuWidget">
+				<x>230</x>
+				<y>358</y>
+				<width>320</width>
+				<height>128</height>
+			</widget>
+			<widget name="settingTopBackBtn">
+				<x>731</x>
+				<y>0</y>
+				<width>50</width>
+				<height>50</height>
+		  </widget>
+		</widgets>
+	</ui>
+</application>

@@ -1,0 +1,2 @@
+ACTION=="change", ENV{GPIO_NAME}=="car-reverse*", RUN+="/etc/rk-reverse-uevent.sh $env{GPIO_NAME}"
+ACTION=="change", ENV{CVBS_NAME}=="*RESOLUTION*", RUN+="/etc/rk-camera-uevent.sh $env{CVBS_NAME}"

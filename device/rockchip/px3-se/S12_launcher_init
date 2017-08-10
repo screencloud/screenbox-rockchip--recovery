@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# Start px3-se linux service/window....
+#
+
+case "$1" in
+  start)
+	px3seBase -i
+	export LC_ALL='zh_CN.utf8'
+	export QT_EGLFSPLATFORM_USE_GST_VIDEOSINK=1
+	export QT_GSTREAMER_WINDOW_VIDEOSINK=kmssink
+	export QT_QPA_EGLFS_HIDECURSOR=1
+	/usr/local/QLauncher/QLauncher -platform EGLFS &
+	;;
+  stop)
+        ;;
+  *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+        ;;
+esac
+exit 0
