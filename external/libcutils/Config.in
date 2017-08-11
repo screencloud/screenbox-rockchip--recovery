@@ -1,0 +1,3 @@
+config RV_TARGET_LIBCUTILS
+	bool "libcutils"
+	default y

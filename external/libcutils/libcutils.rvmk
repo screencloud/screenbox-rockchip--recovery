@@ -1,0 +1,11 @@
+################################################################################
+#
+# libcutils
+#
+################################################################################
+
+LIBCUTILS_DEPENDENCIES = liblog
+
+LIBCUTILS_TARGET_FILES = $(LIBCUTILS_BUILDDIR)/libcutils.a
+
+$(eval $(rv-generic-cmake))

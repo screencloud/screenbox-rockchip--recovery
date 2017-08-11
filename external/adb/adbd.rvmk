@@ -1,0 +1,12 @@
+################################################################################
+#
+# adbd
+#
+################################################################################
+
+# add dependencies
+ADBD_DEPENDENCIES = libcutils
+
+ADBD_TARGET_FILES = $(ADBD_BUILDDIR)/adbd
+
+$(eval $(rv-generic-cmake))
