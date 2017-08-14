@@ -32,8 +32,6 @@
 说明：正常产品的recovery不需要改动，直接使用SDK所带或只要生成一次recovery.img就可以，不需要每次都编译，除非有改动。
 
 1，生成recovery.img
-	cd recovery && ./mkrecovery_minifs.sh px3se-emmc-minifs-sdk （px3se-emmc-minifs-sdk 这个参数需要根据具体项目选择，参考编译说明文档）
-
-2，生成recovery.img后回退到正常系统编译kernel时需要重新make xxx_defconfig (xxx_defconfig 为具体kernel的defconfig，参考编译说明文档)
+	cd recovery && ./mkrecovery_minifs.sh eMMC （eMMC 这个参数需要根据具体项目选择，sfc、eMMC、slc）
 
 
