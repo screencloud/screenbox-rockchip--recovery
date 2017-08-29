@@ -33,5 +33,6 @@
 
 1，生成recovery.img
 	cd recovery && ./mkrecovery_minifs.sh eMMC （eMMC 这个参数需要根据具体项目选择，sfc、eMMC、slc）
+	第一次生成需要sudo权限创建dev/console节点。
 
 
