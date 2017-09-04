@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# Insmod
+#
+
+auto_mount() {
+	local cmdline="`cat /proc/cmdline`"
+
+	printf "insmod drmboot service...\n"
+	insmod /usr/lib/modules/drmboot.ko
+	local ftmp="${cmdline##*mtdparts=rk29xxnand:}"
+	local ftmp="${ftmp%% *}"
+	local fno=0
+	local fdir=/dev/PartNo
+	mkdir $fdir
+	for i in ${ftmp//,/ }
+	do
+		i=${i##*\(}
+		i=${i%*\)}
+		local fno=$(( fno + 1 ))
+		ln -sf "/dev/mmcblk0p${fno}" ${fdir}/${i}
+	done
+}
+
+case "$1" in
+  start)
+        auto_mount
+        ;;
+  stop)
+        printf "stop finished\n"
+        ;;
+  *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+        ;;
+esac
+exit 0

@@ -1,51 +1,79 @@
-MAGE_OUT_PATH=$(pwd)/rockimg
-KERNEL_PATH=$(pwd)/kernel
-ROOTFS_PATH=$(pwd)/buildroot/output/target
-RECOVERY_OUT=$(pwd)/rockimg/recovery
-PACKAGE_DATA_TOOL_PATH=$(pwd)/ramdisk_tool/
-UPDATER_PX3SE_PATH=$(pwd)/device/rockchip/px3-se
-UPDATER_BIN_PATH=$(pwd)/device/rockchip/px3-se/bin
-UPDATER_TOOL_PATH=$(pwd)/device/rockchip/px3-se/ramdisk_tool/
-PARAMETER_PATH=$(pwd)/device/rockchip/px3-se/rockimg/parameter-recovery.txt
+#! /bin/bash
 
-export PATH=$PATH:${PACKAGE_DATA_TOOL_PATH}
+TOP_PATH=$(pwd)
+KERNEL_PATH=$(pwd)/../kernel
+PX3SE_PATH=$(pwd)/../device/rockchip/px3-se
+ROOTFS_PATH=$(pwd)/rootfs/target
+FSOVERLAY_PATH=$(pwd)/rootfs/rockchip/px3se/fs-overlay
+RECOVERY_OUT=$(pwd)/recoveryImg
+RAMDISK_TOOL_PATH=$(pwd)/tools/ramdisk_tool/
 
-if [ ! -d $MAGE_OUT_PATH ]; then
-  mkdir $MAGE_OUT_PATH
-fi
+export PATH=$PATH:${RAMDISK_TOOL_PATH}
 
-if [ ! -d "$RECOVERY_OUT" ]; then
-  mkdir $RECOVERY_OUT
-fi
+case "$1" in
+	[eE][mM][mM][cC])
+		echo "make px3se-emmc-minifs-sdk"
+		product=px3se-sdk
+		recovery_product=px3se-recovery-sdk
+		kernel_defconfig=px3se_linux_defconfig
+		recovery_kernel_defconfig=px3se_recovery_emmc_defconfig
+		recovery_rootfs_defconfig=px3se_recovery_defconfig
+		;;
+	[sS][fF][cC])
+		echo "make px3se-sfc-sdk"
+		product=px3se-sfc-sdk
+		recovery_product=px3se-recovery-sfc-sdk
+        kernel_defconfig=px3se_linux_sfc_defconfig
+		recovery_kernel_defconfig=px3se_recovery_minifs_sfc_defconfig
+		recovery_rootfs_defconfig=px3se_recovery_defconfig
+		;;
+	[sS][lL][cC])
+		echo "make px3se-slc-sdk"
+		product=px3se-slc-sdk
+		recovery_product=px3se-recovery-slc-sdk
+        kernel_defconfig=px3se_linux_slc_defconfig
+		recovery_kernel_defconfig=px3se_recovery_minifs_slc_defconfig
+		recovery_rootfs_defconfig=px3se_recovery_defconfig
+        ;;
+	*)
+		echo "parameter need:"
+		echo "eMMC or slc  or sfc"
+		exit
+		;;
+esac
+
+rm -rf $RECOVERY_OUT
+mkdir -p $RECOVERY_OUT
+
+echo "make recovery rootfs..."
+cp -f $FSOVERLAY_PATH/S50_updater_init $ROOTFS_PATH/etc/init.d/
 
 #删除多余文件
-if [ -f "$ROOTFS_PATH/dev/console" ]; then
-	rm $ROOTFS_PATH/dev/console
-fi
+[ -f "$ROOTFS_PATH/dev/console" ] && rm $ROOTFS_PATH/dev/console
+[ -f "$ROOTFS_PATH/etc/parameter" ] && rm $ROOTFS_PATH/etc/parameter
 
-#拷贝打包工具
-if [ ! -d "$PACKAGE_DATA_TOOL_PATH" ];then
-	cp -rf $UPDATER_TOOL_PATH $(pwd)
-fi
+echo "make recovery kernel..."
+cd $KERNEL_PATH
+#make ARCH=arm $recovery_kernel_defconfig -j8 && make ARCH=arm $recovery_product.img -j12
 
-#copy 升级程序
-cp $UPDATER_BIN_PATH/updater $ROOTFS_PATH/usr/bin/
+echo "cp kernel.img..."
+cp $KERNEL_PATH/kernel.img $RECOVERY_OUT
 
-#U盘自动挂载
-mkdir -p $ROOTFS_PATH/etc/udev/rules.d/
-mkdir -p $ROOTFS_PATH/mnt/sdcard/
-mkdir -p $ROOTFS_PATH/mnt/udisk/
-cp $UPDATER_PX3SE_PATH/sdcard-udisk-udev/mount-sdcard.sh $ROOTFS_PATH/etc/
-cp $UPDATER_PX3SE_PATH/sdcard-udisk-udev/mount-udisk.sh $ROOTFS_PATH/etc/
-cp $UPDATER_PX3SE_PATH/sdcard-udisk-udev/umount-sdcard.sh $ROOTFS_PATH/etc/
-cp $UPDATER_PX3SE_PATH/sdcard-udisk-udev/umount-udisk.sh $ROOTFS_PATH/etc/
-cp $UPDATER_PX3SE_PATH/sdcard-udisk-udev/rules.d/add-sdcard-udisk.rules $ROOTFS_PATH/etc/udev/rules.d/
-cp $UPDATER_PX3SE_PATH/sdcard-udisk-udev/rules.d/remove-sdcard-udisk.rules $ROOTFS_PATH/etc/udev/rules.d/
+echo "cp resource.img..."
+cp $KERNEL_PATH/resource.img $RECOVERY_OUT
+
+echo "revert kernel defconfig"
+#make ARCH=arm $kernel_defconfig && make ARCH=arm $product.img -j12 &&
 
 
-echo -n "create recovery.img with kernel... " 
-[ -d $ROOTFS_PATH ] && \
+echo "create recovery.img with kernel..." 
+
 mkbootfs $ROOTFS_PATH | minigzip > $RECOVERY_OUT/ramdisk-recovery.img && \
 	truncate -s "%4" $RECOVERY_OUT/ramdisk-recovery.img && \
-mkbootimg --kernel $KERNEL_PATH/kernel.img --ramdisk $RECOVERY_OUT/ramdisk-recovery.img --second $KERNEL_PATH/resource.img --output $RECOVERY_OUT/recovery.img
-echo "done."
+mkbootimg --kernel $RECOVERY_OUT/kernel.img --ramdisk $RECOVERY_OUT/ramdisk-recovery.img --second $RECOVERY_OUT/resource.img --output $RECOVERY_OUT/recovery.img
+
+cp $RECOVERY_OUT/recovery.img $PX3SE_PATH/rockimg/
+rm -rf $RECOVERY_OUT/
+cd $TOP_PATH
+
+echo "make recovery image ok !"

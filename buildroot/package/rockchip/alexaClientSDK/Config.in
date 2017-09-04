@@ -1,3 +1,0 @@
-config BR2_PACKAGE_ALEXACLIENTSDK
-	bool "alexa client sdk"
-

@@ -1,6 +1,0 @@
-config RV_TARGET_ADBD
-	bool "adb server"
-	depends on RV_TARGET_LIBCUTILS
-	default y
-	help
-	  libcutils must enable
