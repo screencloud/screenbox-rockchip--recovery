@@ -1,2 +1,0 @@
-vmalloc=496M rockchip_jtag console=ttyFIQ0 androidboot.selinux=disabled androidboot.hardware=rk30board androidboot.console=ttyFIQ0 noinitrd root=/dev/mmcblk0p6 rootfstype=ext4 mtdparts=rk29xxnand:0x00002000@0x00002000(vendor),0x00002000@0x00004000(idblock),0x00010000@0x00006000(kernel),0x00000800@0x00016000(boot),0x00007800@0x00016800(userdata),0x00007800@0x00016800(recovery) storagemedia=emmc loader.timestamp=2017-06-20_14:51:11 hdmi.vic=-1 tve.format=-1 SecureBootCheckOk=0 androidboot.mode=emmc
-
