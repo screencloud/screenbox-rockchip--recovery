@@ -36,14 +36,13 @@ typedef 	unsigned char 				BYTE;
 #define RK_SECTOR_SIZE	(512)
 
 #if UPDATER_MINI_FW
-	#define DEV_KERNEL_NAME			("dev/PartNo/kernel")
-	
-	#define RK_PARTITION_TAG 		(0x50464B52)
-	#define FW_PART_CNT				4
-	
-	#define FW_PERCENT_CNT			5 //统计百分比次数。
-	#define FW_PERCENT_PORT			8888 //发送百分比接口。
-	
+	#define DEV_KERNEL_NAME		("dev/PartNo/kernel")
+	#define RK_PARTITION_TAG 	(0x50464B52)
+	#define FW_PART_CNT			3
+	#define FW_PERCENT_CNT		5 //统计百分比次数。
+	#define UDISK_DEFAULT_PATH	"/mnt/udisk/Firmware.img"
+	#define SDCARD_DEFAULT_PATH	"/mnt/sdcard/Firmware.img"
+
 typedef enum {
 	PART_VENDOR = 1 << 0,
 	PART_IDBLOCK = 1 << 1,
@@ -52,21 +51,19 @@ typedef enum {
 	PART_USER = 1 << 31
 }ENUM_PARTITION_TYPE;
 
-
 char *devNamesMini[FW_PART_CNT] = {
-	"/dev/PartNo/resource", 
+	"/dev/PartNo/resource",
 	"/dev/PartNo/kernel",
 	"/dev/PartNo/boot",
-	"/dev/PartNo/userdata",
+//	"/dev/PartNo/recovery",
 };
 
 char *partNamesMini[FW_PART_CNT] = {
-	"resource", 
+	"resource",
 	"kernel",
 	"rootfs",
-	"userdata",
+//	"recovery",
 };
-
 
 typedef struct {
 	uint16	year;
@@ -116,58 +113,10 @@ typedef enum{
 	UPDATER_STOP
 }UPDATER_MODE;
 
-enum{
-	IMG_UBOOT = 1,
-	IMG_RESOURCE,
-	IMG_KERNEL,
-	IMG_ROOTFS,
-	IMG_DATA,
-	IMG_CNT
-};
-
-//read info from parameter.txt
-unsigned int partSizeArray[IMG_CNT]={
-	0,//don't care
-	0, //uboot
-	0, //resource
-	0, //kernel
-	0, //rootfs
-	0  //data
-};
-
-//updater mode device names.
-char *devNames[IMG_CNT] = {
-	"/dev/PartNo/misc", //misc+fwinfo.
-	"/dev/PartNo/uboot", //uboot
-	"/dev/PartNo/resource", //resource 
-	"/dev/PartNo/kernel", //kernel
-	"/dev/PartNo/boot", //rootfs
-	"/dev/PartNo/data"  //app
-};
-
-char *imgNames[IMG_CNT] = {
-	NULL,
-	"uboot.img",
-	"resource.img",
-	"kernel.img",
-	"rootfs.img",
-	"data.img"
-};
-
-char *partNames[IMG_CNT] = {
-	NULL,
-	"uboot",
-	"resource",
-	"kernel",
-	"boot",
-	"data"
-};
-
-
 typedef struct{
 	//release date
 	unsigned int update_version;
-	
+
 	//firmware.img path.
 	unsigned char update_path[200];
 
@@ -178,15 +127,11 @@ typedef struct{
 	unsigned short update_mode;
 }UpdaterInfo;
 
-
 #define VERDOR_DEVICE "/dev/vendor_storage"
-
 #define VENDOR_REQ_TAG	0x56524551
 #define VENDOR_READ_IO	_IOW('v', 0x01, unsigned int)
 #define VENDOR_WRITE_IO	_IOW('v', 0x02, unsigned int)
-
 #define VENDOR_UPDATER_ID		14
-
 #define VENDOR_DATA_SIZE (3 * 1024)
 
 typedef struct _RK_VERDOR_REQ {
