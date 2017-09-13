@@ -143,3 +143,7 @@ typedef struct _RK_VERDOR_REQ {
 
 int vendor_storage_read(int buf_size, uint8_t *buf, uint16_t vendor_id);
 int vendor_storage_write(int buf_size, uint8_t *buf, uint16_t vendor_id);
+
+#define MOUNT_PATH_USB		"/mnt/udisk"
+#define MOUNT_PATH_SDCARD	"/mnt/sdcard"
+#define MAX_FILE_NAME_LEN	(1024)

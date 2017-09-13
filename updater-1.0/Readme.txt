@@ -1,4 +1,4 @@
-/***********************************************************************
+﻿/***********************************************************************
  * Author：范立创
  * Date：  2017/9/4
  * Email:  francis.fan@rock-chips.com
@@ -9,4 +9,5 @@
 	../../buildroot/output/host/usr/bin/arm-rockchip-linux-gnueabihf-gcc -g2 -o updater updater.c -lcrypto
  
  2、替换目标
-	将新编译的updater替换recovery/rootfs/target/usr/bin/updater
+	emmc大系统：将新编译的updater替换recovery/rootfs/target/usr/bin/updater
+        小系统：将新编译的updater替换recovery/rootfs/rockchip/px3se/fs-overlay-mini/updater

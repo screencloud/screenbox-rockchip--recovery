@@ -36,6 +36,11 @@
 #include <assert.h>
 #include <time.h>
 #include <openssl/md5.h>
+#include <dirent.h>
+#include <string.h>
+#include <sys/mount.h>
+
+
 
 #include "updater.h"
 
@@ -620,6 +625,147 @@ printf("\nUsage: updater [stop] [OPTION]..\n");
 	printf("\tupdater stop\n");
 }
 
+int get_file_count(char *root)
+{
+	DIR *dir = NULL;
+	struct dirent * ptr = NULL;
+	int total = 0;
+	char path[MAX_FILE_NAME_LEN]={0};
+
+	if(NULL == root)
+	{
+		return -1;
+	}
+
+	dir = opendir(root);
+	if(dir == NULL)
+	{
+		return -1;
+	}
+
+	while((ptr = readdir(dir)) != NULL)
+	{
+		if(strcmp(ptr->d_name,".") == 0 || strcmp(ptr->d_name,"..") == 0)
+		{
+			continue;
+		}
+
+		if(ptr->d_type == DT_DIR)
+		{
+			memset(path, 0x0, sizeof(path));
+			sprintf(path,"%s%s/",root,ptr->d_name);
+			total += get_file_count(path);
+		}
+
+		if(ptr->d_type == DT_REG)
+		{
+			total++;
+		}
+	}
+
+	closedir(dir);
+	return total;
+}
+
+int mount_usb_device()
+{
+	char usbDevice[64] = {0};
+	int result;
+	DIR* d=NULL;
+	struct dirent* de = NULL;
+	int fd_count = 0;
+
+	fd_count = get_file_count(MOUNT_PATH_USB);
+	if(fd_count > 0)
+	{
+		printf("mount_usb_device usb is mounted! fd_count=%d \n", fd_count);
+		return 0;
+	}
+
+	printf("mount_usb_device try to mount udisk! fd_count=%d \n", fd_count);
+
+	d = opendir("/dev");
+	if(d != NULL) {
+		while(de = readdir(d)) {
+			//printf("mount_usb_device /dev/%s\n", de->d_name);
+			if((strncmp(de->d_name, "sd", 2) == 0) &&(isdigit(de->d_name[strlen(de->d_name)-1])!=0)){
+				memset(usbDevice, 0, sizeof(usbDevice));
+				sprintf(usbDevice, "/dev/%s", de->d_name);
+				printf("mount_usb_device try to mount usb device %s by vfat", usbDevice);
+				result = mount(usbDevice, MOUNT_PATH_USB, "vfat",
+						MS_NOATIME | MS_NODEV | MS_NODIRATIME, "shortname=mixed,utf8");
+				if(result != 0) {
+					printf("mount_usb_device try to mount usb device %s by ntfs\n", usbDevice);
+					result = mount(usbDevice, MOUNT_PATH_USB, "ntfs",
+							MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
+				}
+
+				if(result == 0) {
+					closedir(d);
+					return 0;
+				}
+			}
+		}
+		closedir(d);
+	}
+
+	return -1;
+}
+
+int mount_sdcard_device()
+{
+	char sdcardDevice[64] = {0};
+	int result;
+	DIR* d=NULL;
+	struct dirent* de = NULL;
+	int fd_count = 0;
+
+	fd_count = get_file_count(MOUNT_PATH_SDCARD);
+	if(fd_count > 0)
+	{
+		printf("mount_sdcard_device sdcard is mounted! fd_count=%d \n", fd_count);
+		return 0;
+	}
+
+	printf("mount_sdcard_device try to mount sdcard! fd_count=%d \n", fd_count);
+
+	d = opendir("/dev");
+	if(d != NULL) {
+		while(de = readdir(d)) {
+			//printf("mount_sdcard_device /dev/%s\n", de->d_name);
+			if((strncmp(de->d_name, "mmcblk", 6) == 0) && (strncmp(de->d_name, "mmcblk0", 7) != 0) &&(isdigit(de->d_name[strlen(de->d_name)-1])!=0)){
+				memset(sdcardDevice, 0, sizeof(sdcardDevice));
+				sprintf(sdcardDevice, "/dev/%s", de->d_name);
+				printf("mount_sdcard_device try to mount sdcard device %s by vfat", sdcardDevice);
+				result = mount(sdcardDevice, MOUNT_PATH_SDCARD, "vfat",
+						MS_NOATIME | MS_NODEV | MS_NODIRATIME, "shortname=mixed,utf8");
+				if(result != 0) {
+					printf("mount_sdcard_device try to mount sdcard device %s by ntfs\n", sdcardDevice);
+					result = mount(sdcardDevice, MOUNT_PATH_SDCARD, "ntfs",
+							MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
+				}
+
+				if(result == 0) {
+					closedir(d);
+					return 0;
+				}
+			}
+		}
+		closedir(d);
+	}
+
+	return -1;
+}
+
+
+int try_mount_media(void)
+{
+	mount_usb_device();
+	mount_sdcard_device();
+	return 0;
+}
+
+
 int main(int argc, char* argv[])
 {
 	int ret = 0;
@@ -631,6 +777,8 @@ int main(int argc, char* argv[])
 		updater_print_usage();
 		return -1;
 	}
+
+	try_mount_media();
 
 	//对比执行模式。
 	if(!strcmp(argv[1], "stop"))
