@@ -8,6 +8,7 @@ ROOTFS_PATH=$(pwd)/rootfs/target
 FSOVERLAY_PATH=$(pwd)/rootfs/rockchip/px3se/fs-overlay
 RECOVERY_OUT=$(pwd)/recoveryImg
 RAMDISK_TOOL_PATH=$(pwd)/tools/ramdisk_tool/
+LOG_PATH=$(pwd)/../kernel/drivers/video/logo
 
 export PATH=$PATH:${RAMDISK_TOOL_PATH}
 
@@ -30,8 +31,11 @@ cp -f $FSOVERLAY_PATH/S50_updater_init $ROOTFS_PATH/etc/init.d/
 [ -f "$ROOTFS_PATH/etc/parameter" ] && rm $ROOTFS_PATH/etc/parameter
 
 echo "make recovery kernel..."
+mv $LOG_PATH/logo_linux_clut224.ppm $LOG_PATH/logo_linux_clut224.ppm-bak
+cp -f resource/recovery_logo.ppm $LOG_PATH/logo_linux_clut224.ppm
+
 cd $KERNEL_PATH
-make ARCH=arm px3se_recovery_emmc_defconfig -j8 && make ARCH=arm px3se-recovery-sdk.img -j12
+make ARCH=arm clean -j4 && make ARCH=arm px3se_recovery_emmc_defconfig -j8 && make ARCH=arm px3se-recovery-sdk.img -j12
 
 echo "cp kernel.img..."
 cp $KERNEL_PATH/kernel.img $RECOVERY_OUT
@@ -40,7 +44,8 @@ echo "cp resource.img..."
 cp $KERNEL_PATH/resource.img $RECOVERY_OUT
 
 echo "revert kernel defconfig"
-make ARCH=arm px3se_linux_defconfig && make ARCH=arm px3se-sdk.img -j12
+mv $LOG_PATH/logo_linux_clut224.ppm-bak $LOG_PATH/logo_linux_clut224.ppm
+make ARCH=arm clean -j4 && make ARCH=arm px3se_linux_defconfig && make ARCH=arm px3se-sdk.img -j12
 
 echo "create recovery.img with kernel..."
 

@@ -8,6 +8,7 @@ ROOTFS_BASE=$(pwd)/rootfs
 ROOTFS_PATH=$(pwd)/rootfs/target
 FSOVERLAY_PATH=$(pwd)/rootfs/rockchip/px3se/fs-overlay-mini
 IMAGE_PATH=$(pwd)/recoveryimg/
+LOG_PATH=$(pwd)/../kernel/drivers/video/logo
 
 case "$1" in
 	[eE][mM][mM][cC])
@@ -58,8 +59,10 @@ cp -f $FSOVERLAY_PATH/init $ROOTFS_PATH/init
 
 
 echo "make recovery kernel..."
-cd $KERNEL_PATH
+mv $LOG_PATH/logo_linux_clut224.ppm $LOG_PATH/logo_linux_clut224.ppm-bak
+cp -f resource/recovery_logo.ppm $LOG_PATH/logo_linux_clut224.ppm
 
+cd $KERNEL_PATH
 make ARCH=arm clean -j4 && make ARCH=arm $recovery_kernel_defconfig -j8 && make ARCH=arm $product.img -j12
 
 cp $TOOLS_PATH/kernelimage $IMAGE_PATH
@@ -71,6 +74,7 @@ echo "cp zImage"
 cp $KERNEL_PATH/arch/arm/boot/zImage $IMAGE_PATH/
 
 echo "revert kernel defconfig"
+mv $LOG_PATH/logo_linux_clut224.ppm-bak $LOG_PATH/logo_linux_clut224.ppm
 make ARCH=arm clean -j4 && make ARCH=arm $kernel_defconfig && make ARCH=arm $product.img -j12
 
 echo "cat zImage & dtb > zImage-dtb"
