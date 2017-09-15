@@ -35,7 +35,6 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <time.h>
-#include <openssl/md5.h>
 #include <dirent.h>
 #include <string.h>
 #include <sys/mount.h>
