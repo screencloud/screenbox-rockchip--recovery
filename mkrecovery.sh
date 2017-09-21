@@ -14,24 +14,26 @@ export PATH=$PATH:${RAMDISK_TOOL_PATH}
 
 echo "make recovery start..."
 
+#初始化操作（清理旧文件）
 rm -rf $RECOVERY_OUT
 mkdir -p $RECOVERY_OUT
+rm -rf $ROOTFS_BASE
 
 echo "make recovery rootfs..."
 
-if [ ! -d $ROOTFS_BASE ]
-then
-	echo -n "tar xf resource/rootfs.tar..."
-	tar xf resource/rootfs.tar
-	echo "done."
-fi
+echo -n "tar xf resource/rootfs.tar.gz..."
+tar zxf resource/rootfs.tar.gz
+echo "done."
 
+#拷贝升级相关脚本。
+cp -f $FSOVERLAY_PATH/busybox $ROOTFS_PATH/bin/
 cp -f $FSOVERLAY_PATH/S50_updater_init $ROOTFS_PATH/etc/init.d/
-
-[ -f "$ROOTFS_PATH/etc/parameter" ] && rm $ROOTFS_PATH/etc/parameter
+cp -f $FSOVERLAY_PATH/RkUpdater.sh $ROOTFS_PATH/etc/profile.d/
+cp -f $FSOVERLAY_PATH/updater $ROOTFS_PATH/usr/bin/
+cp -f $FSOVERLAY_PATH/init $ROOTFS_PATH/init
 
 echo "make recovery kernel..."
-mv $LOG_PATH/logo_linux_clut224.ppm $LOG_PATH/logo_linux_clut224.ppm-bak
+rm -f $LOG_PATH/logo_linux_clut224.ppm
 cp -f resource/recovery_logo.ppm $LOG_PATH/logo_linux_clut224.ppm
 
 cd $KERNEL_PATH
@@ -44,7 +46,8 @@ echo "cp resource.img..."
 cp $KERNEL_PATH/resource.img $RECOVERY_OUT
 
 echo "revert kernel defconfig"
-mv $LOG_PATH/logo_linux_clut224.ppm-bak $LOG_PATH/logo_linux_clut224.ppm
+rm -f $LOG_PATH/logo_linux_clut224.ppm
+cp -f $TOP_PATH/resource/linux_logo.ppm $LOG_PATH/logo_linux_clut224.ppm
 make ARCH=arm clean -j4 && make ARCH=arm px3se_linux_defconfig && make ARCH=arm px3se-sdk.img -j12
 
 echo "create recovery.img with kernel..."

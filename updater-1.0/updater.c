@@ -342,7 +342,6 @@ int get_part_offset_and_size(char* emPartName, uint32* pOffset, uint32* pPartSiz
 		}
 	}
 
-	printf("%s FAILED \n", __FUNCTION__);
 	return -1;
 }
 
@@ -480,7 +479,6 @@ int updater_local_simple( int debug_on, int force)
 		}
 	}
 
-	printf("fw_updater sizeof(STRUCT_PART_INFO)=%d \n", (int)sizeof(STRUCT_PART_INFO));
 	ret = read(fdfile, &g_partition, sizeof(STRUCT_PART_INFO));
 	if(ret <= 0)
 	{
@@ -532,7 +530,7 @@ MINI_UP_RETRY:
 		//unlock_mtd(devNamesMini[partId]);
 		if ((fd = open(devNamesMini[partId],O_RDWR)) < 0)
 		{
-			printf("%s open error\n", devNamesMini[partId]);
+			printf("%s open error(%s)\n", devNamesMini[partId], strerror(errno));
 			close(fdfile);
 			free(ubuf);
 			return -1;
@@ -759,17 +757,24 @@ int mount_sdcard_device()
 
 int try_mount_media(void)
 {
-	mount_usb_device();
-	mount_sdcard_device();
+	int ret0 = 0;
+	int ret1 = 0;
+	
+	ret0 = mount_usb_device();
+	ret1 = mount_sdcard_device();
+	
+	if((ret0 < 0) && (ret1 < 0))
+		return -1;
+	
 	return 0;
 }
-
 
 int main(int argc, char* argv[])
 {
 	int ret = 0;
 	int debug = 0;
 	int force = 0;
+	int try_mount_cnt = 0;
 	UPDATER_MODE umode;
 
 	if(argc > 3){
@@ -777,7 +782,16 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	try_mount_media();
+	try_mount_cnt = MOUNT_RETRY_CNT;
+	while(try_mount_cnt--){
+		if(try_mount_media() == 0)
+			break;
+		sleep(MOUNT_SLEEP_SEC);
+	}
+	if(try_mount_cnt <= 0){
+		printf("ERROR:updater mount udisk/sdcard failed! \n");
+		return -1;
+	}
 
 	//对比执行模式。
 	if(!strcmp(argv[1], "stop"))

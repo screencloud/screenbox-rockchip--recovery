@@ -6,7 +6,7 @@ PRODUCT_PATH=$(pwd)/../device/rockchip/px3-se
 TOOLS_PATH=$PRODUCT_PATH/mini_fs
 ROOTFS_BASE=$(pwd)/rootfs
 ROOTFS_PATH=$(pwd)/rootfs/target
-FSOVERLAY_PATH=$(pwd)/rootfs/rockchip/px3se/fs-overlay-mini
+FSOVERLAY_PATH=$(pwd)/rootfs/rockchip/px3se/fs-overlay
 IMAGE_PATH=$(pwd)/recoveryimg/
 LOG_PATH=$(pwd)/../kernel/drivers/video/logo
 
@@ -39,27 +39,31 @@ case "$1" in
 		;;
 esac
 
+#初始化操作（清理旧文件）
 rm -rf $IMAGE_PATH
 mkdir -p $IMAGE_PATH
+rm -rf $ROOTFS_BASE
 
 echo "make recovery rootfs..."
 
-if [ ! -d $ROOTFS_BASE ]
+echo -n "tar xf resource/rootfs.tar.gz..."
+tar zxf resource/rootfs.tar.gz
+echo "done."
+
+#仅小容量emmc需要parameter提供分区信息。
+if [ $img_name == "recovery_emmc.img" ]
 then
-	echo -n "tar xf resource/rootfs_mini.tar.gz..."
-	tar zxf resource/rootfs_mini.tar.gz
-	echo "done."
+	cp -f $FSOVERLAY_PATH/parameter $ROOTFS_PATH/etc/
 fi
 
-cp -f $FSOVERLAY_PATH/S50_updater_init $ROOTFS_PATH/etc/init.d/
-cp -f $FSOVERLAY_PATH/parameter $ROOTFS_PATH/etc/
+#拷贝升级相关脚本。
+cp -f $FSOVERLAY_PATH/S50_updater_init_mini $ROOTFS_PATH/etc/init.d/S50_updater_init
 cp -f $FSOVERLAY_PATH/RkUpdater.sh $ROOTFS_PATH/etc/profile.d/
 cp -f $FSOVERLAY_PATH/updater $ROOTFS_PATH/usr/bin/
 cp -f $FSOVERLAY_PATH/init $ROOTFS_PATH/init
 
-
 echo "make recovery kernel..."
-mv $LOG_PATH/logo_linux_clut224.ppm $LOG_PATH/logo_linux_clut224.ppm-bak
+rm -f $LOG_PATH/logo_linux_clut224.ppm
 cp -f resource/recovery_logo.ppm $LOG_PATH/logo_linux_clut224.ppm
 
 cd $KERNEL_PATH
@@ -74,7 +78,8 @@ echo "cp zImage"
 cp $KERNEL_PATH/arch/arm/boot/zImage $IMAGE_PATH/
 
 echo "revert kernel defconfig"
-mv $LOG_PATH/logo_linux_clut224.ppm-bak $LOG_PATH/logo_linux_clut224.ppm
+rm -f $LOG_PATH/logo_linux_clut224.ppm
+cp -f $TOP_PATH/resource/linux_logo.ppm $LOG_PATH/logo_linux_clut224.ppm
 make ARCH=arm clean -j4 && make ARCH=arm $kernel_defconfig && make ARCH=arm $product.img -j12
 
 echo "cat zImage & dtb > zImage-dtb"
