@@ -6,7 +6,7 @@
 
  1、编译
 	首先确保工程目录下buildroot已经成功编译，然后在updater目录下执行如下命令：
-	../../buildroot/output/host/usr/bin/arm-rockchip-linux-gnueabihf-gcc -g2 -o updater updater.c
+	../../buildroot/output/host/usr/bin/arm-rockchip-linux-gnueabihf-gcc -g2 -o updater updater.c recovery_display.c
 
  2、替换目标
 	a) 解压recovery/resource/rootfs.tar.gz。

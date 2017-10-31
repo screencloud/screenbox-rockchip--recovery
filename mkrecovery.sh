@@ -33,9 +33,6 @@ cp -f $FSOVERLAY_PATH/updater $ROOTFS_PATH/usr/bin/
 cp -f $FSOVERLAY_PATH/init $ROOTFS_PATH/init
 
 echo "make recovery kernel..."
-rm -f $LOG_PATH/logo_linux_clut224.ppm
-cp -f resource/recovery_logo.ppm $LOG_PATH/logo_linux_clut224.ppm
-
 cd $KERNEL_PATH
 make ARCH=arm clean -j4 && make ARCH=arm px3se_recovery_emmc_defconfig -j8 && make ARCH=arm px3se-recovery-sdk.img -j12
 
@@ -46,8 +43,6 @@ echo "cp resource.img..."
 cp $KERNEL_PATH/resource.img $RECOVERY_OUT
 
 echo "revert kernel defconfig"
-rm -f $LOG_PATH/logo_linux_clut224.ppm
-cp -f $TOP_PATH/resource/linux_logo.ppm $LOG_PATH/logo_linux_clut224.ppm
 make ARCH=arm clean -j4 && make ARCH=arm px3se_linux_defconfig && make ARCH=arm px3se-sdk.img -j12
 
 echo "create recovery.img with kernel..."

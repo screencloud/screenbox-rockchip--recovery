@@ -63,8 +63,6 @@ cp -f $FSOVERLAY_PATH/updater $ROOTFS_PATH/usr/bin/
 cp -f $FSOVERLAY_PATH/init $ROOTFS_PATH/init
 
 echo "make recovery kernel..."
-rm -f $LOG_PATH/logo_linux_clut224.ppm
-cp -f resource/recovery_logo.ppm $LOG_PATH/logo_linux_clut224.ppm
 
 cd $KERNEL_PATH
 make ARCH=arm clean -j4 && make ARCH=arm $recovery_kernel_defconfig -j8 && make ARCH=arm $product.img -j12
@@ -78,8 +76,6 @@ echo "cp zImage"
 cp $KERNEL_PATH/arch/arm/boot/zImage $IMAGE_PATH/
 
 echo "revert kernel defconfig"
-rm -f $LOG_PATH/logo_linux_clut224.ppm
-cp -f $TOP_PATH/resource/linux_logo.ppm $LOG_PATH/logo_linux_clut224.ppm
 make ARCH=arm clean -j4 && make ARCH=arm $kernel_defconfig && make ARCH=arm $product.img -j12
 
 echo "cat zImage & dtb > zImage-dtb"

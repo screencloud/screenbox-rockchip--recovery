@@ -42,6 +42,7 @@
 
 
 #include "updater.h"
+#include "recovery_display.h"
 
 static STRUCT_PART_INFO g_partition;  //size 2KB
 
@@ -287,12 +288,12 @@ int fwinfo_write(UpdaterInfo* fwinfo, UPDATER_MODE mode)
 	return ret;
 }
 
-int get_fw_size_info(uint32* total_size, uint32* limit_size)
+int get_fw_size_info(int index, uint32* fw_size, uint32* limit_size)
 {
-	int i=0, j=0;
-	unsigned int sum=0;
+	int i=0;
+	unsigned int size =0;
 
-	if((NULL == total_size) || (NULL == limit_size))
+	if((NULL == fw_size) || (NULL == limit_size))
 	{
 		printf("%s invalid input parameters \n", __FUNCTION__);
 		return -1;
@@ -300,20 +301,18 @@ int get_fw_size_info(uint32* total_size, uint32* limit_size)
 
 	if (g_partition.hdr.uiFwTag == RK_PARTITION_TAG)
 	{
-		for(j=0; j<FW_PART_CNT; j++){
-			for (i = 0; i < g_partition.hdr.uiPartEntryCount; i++){
-				if(strcmp(g_partition.part[i].szName, partNamesMini[j]) == 0){
-					sum += (g_partition.part[i].uiPartSize*RK_SECTOR_SIZE);
-					break;
-				}
+		for (i = 0; i < g_partition.hdr.uiPartEntryCount; i++){
+			if(strcmp(g_partition.part[i].szName, partNamesMini[index]) == 0){
+				size = g_partition.part[i].uiPartSize*RK_SECTOR_SIZE;
+				break;
 			}
 		}
 	}
 
-	*total_size = sum;
-	*limit_size = sum/FW_PERCENT_CNT - 512;
+	*fw_size = size;
+	*limit_size = size/FW_PERCENT_CNT - 512;
 
-	printf("#Firmware total size:%d, limit size:%d\n", *total_size, *limit_size);
+	printf("#Firmware total size:%d, limit size:%d\n", *fw_size, *limit_size);
 	return 0;
 }
 
@@ -417,12 +416,11 @@ int updater_local_simple( int debug_on, int force)
 	int partId = 0;
 	char fwinfo_buf[512];
 	UpdaterInfo* fwinfo = NULL;
-	unsigned int total_size = 0;
-	unsigned int limit_size = 0;
 	unsigned int tmp_size = 0;
 	unsigned int percent_value = 0;
 	char percent_msg[100];
 	char fw_path[200];
+	char print_info[40];
 
 	/* 初始化指针 */
 	fwinfo = (UpdaterInfo*)fwinfo_buf;
@@ -457,6 +455,10 @@ int updater_local_simple( int debug_on, int force)
 		printf("ERROR:Firmware.img path is invalid!\n");
 		//return -1;
 	}
+
+	//memset(print_info, 0, sizeof(print_info));
+	//sprintf(print_info, "update_version:0x%08x\n", fwinfo->update_version);
+	//print_recovery_info(FONT_BLU, print_info);
 
 	fdfile = open(fw_path, O_RDONLY);
 	if(fdfile < 0)
@@ -509,13 +511,20 @@ int updater_local_simple( int debug_on, int force)
 		return -1;
 	}
 
-	//获取固件总大小和门限大小。
-	get_fw_size_info(&total_size, &limit_size);
 	tmp_size = 0;
 
 	for(partId=0; partId<FW_PART_CNT; partId++)
 	{
+		unsigned int fw_size = 0;
+		unsigned int limit_size = 0;
+		percent_value = 0;
+
 		printf("\n====Start updating %s ====\n", partNamesMini[partId]);
+
+		memset(print_info, 0, sizeof(print_info));
+		sprintf(print_info, "\n====Start updating %s ====", partNamesMini[partId]);
+		print_recovery_info(FONT_BLU, print_info);
+		get_fw_size_info(partId, &fw_size, &limit_size);
 
 MINI_UP_RETRY:
 		partOffset = 0;
@@ -525,12 +534,20 @@ MINI_UP_RETRY:
 		if( ret != 0)
 		{
 			printf("+++++++ skip %s ++++++++++++\n", partNamesMini[partId]);
+
+			memset(print_info, 0, sizeof(print_info));
+			sprintf(print_info, "+++++++++ skip %s ++++++++++", partNamesMini[partId]);
+			print_recovery_info(FONT_BLU, print_info);
 			continue;
 		}
 		//unlock_mtd(devNamesMini[partId]);
 		if ((fd = open(devNamesMini[partId],O_RDWR)) < 0)
 		{
 			printf("%s open error(%s)\n", devNamesMini[partId], strerror(errno));
+
+			memset(print_info, 0, sizeof(print_info));
+			sprintf(print_info, "%s open error(%s)\n", devNamesMini[partId], strerror(errno));
+			print_recovery_info(FONT_RED, print_info);
 			close(fdfile);
 			free(ubuf);
 			return -1;
@@ -570,6 +587,11 @@ MINI_UP_RETRY:
 				percent_value += (100/FW_PERCENT_CNT);
 				memset(percent_msg, 0, sizeof(percent_msg));
 				sprintf(percent_msg, "updater_percent:%d", percent_value);
+
+				memset(print_info, 0, sizeof(print_info));
+				sprintf(print_info, "upgrade progress %d%%", percent_value);
+				print_recovery_info(FONT_BLU, print_info);
+
 				if(debug_on)
 					printf("\t******** %s ********\n", percent_msg);
 
@@ -577,20 +599,16 @@ MINI_UP_RETRY:
 			}
 		}
 
+		if(percent_value < 100) {
+			memset(print_info, 0, sizeof(print_info));
+			sprintf(print_info, "upgrade progress 100%%");
+			print_recovery_info(FONT_BLU, print_info);
+		}
 		fsync(fd);
 		close(fd);
 		sync();
 		updater_runapp("sync");
 		sleep(3);
-	}
-
-	/* 百分百值判断 */
-	if(percent_value < 100)
-	{
-		memset(percent_msg, 0, sizeof(percent_msg));
-		sprintf(percent_msg, "updater_percent:%d", 100);
-		if(debug_on)
-			printf("\t******** %s ********\n", percent_msg);
 	}
 
 	/*记录新版本信息*/
@@ -788,8 +806,13 @@ int main(int argc, char* argv[])
 			break;
 		sleep(MOUNT_SLEEP_SEC);
 	}
+
+	open_disp_dev();
+
 	if(try_mount_cnt <= 0){
-		printf("ERROR:updater mount udisk/sdcard failed! \n");
+		printf("====ERROR:updater mount udisk/sdcard failed!====\n");
+		print_recovery_info(FONT_RED, "ERROR: mount udisk/sdcard failed!\n");
+		close_disp_dev();
 		return -1;
 	}
 
@@ -809,6 +832,7 @@ int main(int argc, char* argv[])
 		else
 		{
 			updater_print_usage();
+			close_disp_dev();
 			return -1;
 		}
 	}
@@ -821,6 +845,7 @@ int main(int argc, char* argv[])
 		else
 		{
 			updater_print_usage();
+			close_disp_dev();
 			return -1;
 		}
 	}
@@ -828,6 +853,8 @@ int main(int argc, char* argv[])
 	if(umode == UPDATER_STOP)
 	{
 		updater_stop(debug);
+		print_recovery_info(FONT_RED, "====ERROR: update stop!====\n");
+		close_disp_dev();
 		return 0;
 	}
 	else
@@ -836,10 +863,13 @@ int main(int argc, char* argv[])
 		if(ret != 0)
 		{
 			printf("ERROR:updater failed(s)! \n");
+			print_recovery_info(FONT_RED, "\n====ERROR: update failed!====\n");
+			close_disp_dev();
 			return -1;
 		}
 	}
 
+	print_recovery_info(FONT_GRN, "\n=====Update firmware success!====\n");
 	updater_runapp("busybox reboot");
 
 	return 0;
