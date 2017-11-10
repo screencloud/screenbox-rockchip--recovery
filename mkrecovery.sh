@@ -2,10 +2,10 @@
 
 TOP_PATH=$(pwd)
 KERNEL_PATH=$(pwd)/../kernel
-PX3SE_PATH=$(pwd)/../device/rockchip/px3-se
+RK3399_PATH=$(pwd)/../device/rockchip/rk3399
 ROOTFS_BASE=$(pwd)/rootfs
 ROOTFS_PATH=$(pwd)/rootfs/target
-FSOVERLAY_PATH=$(pwd)/rootfs/rockchip/px3se/fs-overlay
+FSOVERLAY_PATH=$(pwd)/rootfs/rockchip/rk3399/fs-overlay
 RECOVERY_OUT=$(pwd)/recoveryImg
 RAMDISK_TOOL_PATH=$(pwd)/tools/ramdisk_tool/
 LOG_PATH=$(pwd)/../kernel/drivers/video/logo
@@ -32,27 +32,18 @@ cp -f $FSOVERLAY_PATH/RkUpdater.sh $ROOTFS_PATH/etc/profile.d/
 cp -f $FSOVERLAY_PATH/updater $ROOTFS_PATH/usr/bin/
 cp -f $FSOVERLAY_PATH/init $ROOTFS_PATH/init
 
-echo "make recovery kernel..."
-cd $KERNEL_PATH
-make ARCH=arm clean -j4 && make ARCH=arm px3se_recovery_emmc_defconfig -j8 && make ARCH=arm px3se-recovery-sdk.img -j12
-
 echo "cp kernel.img..."
-cp $KERNEL_PATH/kernel.img $RECOVERY_OUT
+cp $KERNEL_PATH/arch/arm64/boot/Image $RECOVERY_OUT/kernel
 
 echo "cp resource.img..."
 cp $KERNEL_PATH/resource.img $RECOVERY_OUT
-
-echo "revert kernel defconfig"
-make ARCH=arm clean -j4 && make ARCH=arm px3se_linux_defconfig && make ARCH=arm px3se-sdk.img -j12
 
 echo "create recovery.img with kernel..."
 
 mkbootfs $ROOTFS_PATH | minigzip > $RECOVERY_OUT/ramdisk-recovery.img && \
 	truncate -s "%4" $RECOVERY_OUT/ramdisk-recovery.img && \
-mkbootimg --kernel $RECOVERY_OUT/kernel.img --ramdisk $RECOVERY_OUT/ramdisk-recovery.img --second $RECOVERY_OUT/resource.img --output $RECOVERY_OUT/recovery.img
+mkbootimg --kernel $RECOVERY_OUT/kernel --ramdisk $RECOVERY_OUT/ramdisk-recovery.img --second $RECOVERY_OUT/resource.img --output $RECOVERY_OUT/recovery.img
 
-cp $RECOVERY_OUT/recovery.img $PX3SE_PATH/rockimg/
-rm -rf $RECOVERY_OUT/
-cd $TOP_PATH
+cp $RECOVERY_OUT/recovery.img $RK3399_PATH/rockimg/
 
 echo "make recovery image ok !"
